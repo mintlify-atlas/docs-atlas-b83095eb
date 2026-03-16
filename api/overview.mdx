@@ -1,0 +1,79 @@
+---
+title: "API overview"
+description: "Overview of the Eventos REST API — base URL, authentication, and error handling"
+---
+
+The Eventos API is a REST API built with Express.js (Node 14.x) that exposes event participant data stored in a PostgreSQL database. All responses are JSON.
+
+## Base URL
+
+The base URL depends on where the server is deployed. When running locally with the default configuration:
+
+```
+http://localhost:3000
+```
+
+The server binds to the port defined by the `PORT` environment variable, falling back to `3000` if it is not set.
+
+## Authentication
+
+No authentication is required. All endpoints are publicly accessible without tokens, API keys, or credentials.
+
+## CORS
+
+The API enforces a strict CORS policy. Only requests originating from the following domain are permitted:
+
+```
+https://eventosutmach.000webhostapp.com
+```
+
+Browser requests from any other origin will be blocked by the CORS policy and will not reach the server. Server-to-server requests (e.g., curl, Postman) are not subject to CORS restrictions.
+
+## Content type
+
+All responses use `Content-Type: application/json`. Send requests without a request body; no `Content-Type` header is required on requests.
+
+## Error handling
+
+When the server encounters an unexpected error (for example, a database connection failure), it returns HTTP `500` with the following JSON body:
+
+<ResponseField name="error" type="string" required>
+  A human-readable error message. Always `"Error en el servidor"` for server-side failures.
+</ResponseField>
+
+Example error response:
+
+```json
+{
+  "error": "Error en el servidor"
+}
+```
+
+## Available endpoints
+
+<CardGroup cols={1}>
+  <Card title="GET /lista" icon="list" href="/api/participants">
+    Retrieve all event participants from the database. Returns a JSON array of rows from the Prueba table.
+  </Card>
+</CardGroup>
+
+## Successful response example
+
+A successful request to `GET /lista` returns HTTP `200` with a JSON array:
+
+```json
+[
+  {
+    "id": 1,
+    "nombre": "Ana García",
+    "correo": "ana@example.com"
+  },
+  {
+    "id": 2,
+    "nombre": "Luis Pérez",
+    "correo": "luis@example.com"
+  }
+]
+```
+
+The exact fields in each object depend on the schema of the `Prueba` table.

@@ -1,0 +1,63 @@
+---
+title: Introduction
+description: A lightweight Node.js REST API built with Express and PostgreSQL for managing and listing event participants.
+---
+
+# Eventos API
+
+Eventos is a lightweight REST API that powers event participant management. Built with Node.js, Express, and PostgreSQL, it provides a simple HTTP interface for retrieving participant data stored in a PostgreSQL database.
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Get the API running locally in minutes
+  </Card>
+  <Card title="Configuration" icon="gear" href="/guides/configuration">
+    Configure environment variables and runtime settings
+  </Card>
+  <Card title="Database Setup" icon="database" href="/guides/database-setup">
+    Set up your PostgreSQL database and schema
+  </Card>
+  <Card title="API Reference" icon="code" href="/api/overview">
+    Explore the full API endpoint documentation
+  </Card>
+</CardGroup>
+
+## Overview
+
+The Eventos API exposes a single endpoint that returns a list of all participants registered in the system. It is designed to serve a frontend application hosted at a known origin, with CORS enforced server-side.
+
+### Key features
+
+<CardGroup cols={2}>
+  <Card title="Express.js REST API" icon="server">
+    Minimal, performant HTTP server using Express 4
+  </Card>
+  <Card title="PostgreSQL integration" icon="database">
+    Connection pooling via the `pg` library for reliable database access
+  </Card>
+  <Card title="CORS enforcement" icon="shield">
+    Requests restricted to the authorized frontend origin
+  </Card>
+  <Card title="Environment configuration" icon="sliders">
+    All secrets and settings managed via environment variables
+  </Card>
+</CardGroup>
+
+## Tech stack
+
+| Technology | Purpose |
+|---|---|
+| Node.js 14.x | Runtime environment |
+| Express 4 | HTTP server and routing |
+| PostgreSQL | Relational database |
+| `pg` | PostgreSQL client with connection pooling |
+| `dotenv` | Environment variable loading |
+| `cors` | Cross-Origin Resource Sharing middleware |
+
+## How it works
+
+The API connects to a PostgreSQL database using a connection pool configured from the `DATABASE_URL` environment variable. On each request to `GET /lista`, it runs a `SELECT *` query against the `Prueba` table and returns the results as a JSON array.
+
+<Note>
+  The API enforces CORS to only accept requests from `https://eventosutmach.000webhostapp.com`. Requests from other origins will be blocked by the browser.
+</Note>

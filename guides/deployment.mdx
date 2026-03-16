@@ -1,0 +1,96 @@
+---
+title: "Deployment"
+description: "Deploy the Eventos API to a hosting platform"
+---
+
+The Eventos API is a Node.js Express application. It can be deployed to any platform that supports Node 14.x and allows setting environment variables.
+
+## Requirements
+
+| Requirement | Value |
+|---|---|
+| Node.js version | `14.x` (as specified in `package.json` `engines`) |
+| Start command | `npm start` (runs `node index.js`) |
+| Required env vars | `DATABASE_URL` |
+| Optional env vars | `PORT` (platform usually injects this automatically) |
+
+## Hardcoded CORS origin
+
+<Warning>
+The allowed CORS origin is hardcoded in `index.js`:
+
+```js
+const allowedOrigin = 'https://eventosutmach.000webhostapp.com';
+```
+
+Only requests from `https://eventosutmach.000webhostapp.com` will be accepted by the browser. If your frontend is hosted at a different domain, you must update this constant in the source code and redeploy. There is no environment variable to override it.
+</Warning>
+
+## Deployment steps
+
+<Steps>
+  <Step title="Prepare your repository">
+    Ensure your repository contains `index.js`, `package.json`, and a `.gitignore` that excludes `.env`. Do not commit your `.env` file — set environment variables through the platform's dashboard instead.
+  </Step>
+
+  <Step title="Set environment variables on the platform">
+    Configure the following variables in your platform's environment settings:
+
+    | Variable | Value |
+    |---|---|
+    | `DATABASE_URL` | Your PostgreSQL connection string |
+    | `PORT` | Usually set automatically by the platform — only set manually if needed |
+  </Step>
+
+  <Step title="Deploy via your chosen platform">
+    Select a platform below and follow the platform-specific steps.
+
+    <Tabs>
+      <Tab title="Railway">
+        1. Go to [railway.app](https://railway.app) and create a new project.
+        2. Choose **Deploy from GitHub repo** and connect your repository.
+        3. In the **Variables** tab, add `DATABASE_URL` with your connection string.
+        4. Railway injects `PORT` automatically — do not set it manually.
+        5. Under **Settings → Deploy**, confirm the start command is `npm start`.
+        6. Click **Deploy**. Railway will install dependencies and start the server.
+      </Tab>
+      <Tab title="Render">
+        1. Go to [render.com](https://render.com) and create a new **Web Service**.
+        2. Connect your GitHub repository.
+        3. Set the **Build Command** to `npm install` and the **Start Command** to `npm start`.
+        4. Set the **Node version** to `14` in the environment settings.
+        5. Under **Environment**, add `DATABASE_URL` with your connection string.
+        6. Render injects `PORT` automatically.
+        7. Click **Create Web Service** to deploy.
+      </Tab>
+    </Tabs>
+  </Step>
+
+  <Step title="Start the server">
+    The start command defined in `package.json` is:
+
+    ```bash
+    npm start
+    ```
+
+    This runs `node index.js` directly. No build step is required — the API uses ES module syntax natively supported by Node 14.x.
+  </Step>
+
+  <Step title="Verify the deployment">
+    Once the server is running, send a request to the `GET /lista` endpoint:
+
+    ```bash
+    curl https://your-deployed-url.com/lista
+    ```
+
+    A successful response returns a JSON array of rows from the `Prueba` table:
+
+    ```json
+    [
+      { "id": 1, "nombre": "Example" }
+    ]
+    ```
+
+    If the server returns `{ "error": "Error en el servidor" }`, check the platform's log output for the underlying PostgreSQL error.
+  </Step>
+</Steps>

@@ -1,0 +1,111 @@
+---
+title: "Database setup"
+description: "Set up your PostgreSQL database and schema for the Eventos API"
+---
+
+The Eventos API connects to a PostgreSQL database using the `pg` library's connection pooling. This guide walks through provisioning a database, creating the required schema, and wiring up the connection.
+
+## Prerequisites
+
+- A PostgreSQL instance with SSL support. Suitable options include:
+  - [Neon](https://neon.tech) — serverless Postgres, SSL enabled by default
+  - [Supabase](https://supabase.com) — managed Postgres, SSL enabled by default
+  - [Railway](https://railway.app) — managed Postgres, SSL enabled by default
+  - A self-managed PostgreSQL server with SSL configured
+
+<Note>
+SSL is required. The `pg` Pool in `index.js` is initialized with `ssl: true` and this cannot be changed via environment variables. Any PostgreSQL host that does not support SSL will cause connection failures.
+</Note>
+
+## Setup steps
+
+<Steps>
+  <Step title="Provision a PostgreSQL database">
+    Create a new PostgreSQL database on your chosen platform. Most cloud providers will give you a connection string after creation — copy it for the next steps.
+  </Step>
+
+  <Step title="Create the Prueba table">
+    The API queries `SELECT * FROM Prueba`. You must create this table before the API can serve requests. The exact column schema depends on your event data requirements; at minimum you will need an identifier and participant fields.
+
+    Connect to your database and run:
+
+    ```sql
+    CREATE TABLE Prueba (
+        id SERIAL PRIMARY KEY,
+        nombre VARCHAR(255) NOT NULL,
+        -- add additional columns to match your event data
+    );
+    ```
+
+    The `SELECT *` query in the API will return every column defined in this table, so design the schema to match what your frontend expects to receive.
+  </Step>
+
+  <Step title="Obtain the connection string">
+    Your PostgreSQL connection string follows this format:
+
+    ```
+    postgresql://user:password@host:port/dbname
+    ```
+
+    For example:
+
+    ```
+    postgresql://alice:s3cr3t@db.example.com:5432/eventos
+    ```
+
+    Cloud providers usually display this string in their dashboard. For Neon, Supabase, and Railway it is labeled **Connection String** or **Database URL**.
+  </Step>
+
+  <Step title="Set DATABASE_URL in your environment">
+    Add the connection string to your `.env` file in the project root:
+
+    ```bash
+    DATABASE_URL=postgresql://user:password@host:5432/dbname
+    ```
+
+    When deploying to a platform, set `DATABASE_URL` as an environment variable in the platform's dashboard instead of using a `.env` file.
+  </Step>
+
+  <Step title="Test the connection">
+    Start the API server:
+
+    ```bash
+    npm start
+    ```
+
+    Then make a request to the `GET /lista` endpoint:
+
+    ```bash
+    curl http://localhost:3000/lista
+    ```
+
+    A successful response returns a JSON array of rows from the `Prueba` table:
+
+    ```json
+    [
+      { "id": 1, "nombre": "Example" }
+    ]
+    ```
+
+    If the connection fails, the server returns:
+
+    ```json
+    { "error": "Error en el servidor" }
+    ```
+
+    Check the server logs — the full error is printed to `stderr` via `console.error(error)`.
+  </Step>
+</Steps>
+
+## SSL notes
+
+The pool is configured with `ssl: true`:
+
+```js
+const pool = new pg.Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: true
+})
+```
+
+This passes `ssl: true` directly to the underlying `node-postgres` driver, which enables TLS for all database connections. If you are connecting to a self-managed PostgreSQL server, ensure SSL is enabled and a valid certificate is in place. Most cloud-hosted databases handle this automatically.

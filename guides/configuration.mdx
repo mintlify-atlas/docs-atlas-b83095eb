@@ -1,0 +1,96 @@
+---
+title: "Configuration"
+description: "Configure environment variables and runtime settings for the Eventos API"
+---
+
+The Eventos API is configured through environment variables loaded at startup via [dotenv](https://github.com/motdotla/dotenv). The entry point calls `config()` from `dotenv` before any other setup, so values from a `.env` file in the project root are available immediately to `process.env`.
+
+## Environment variables
+
+<ParamField query="DATABASE_URL" type="string" required>
+  PostgreSQL connection string used by the `pg` Pool. Must be a valid `postgresql://` URI. SSL is always enabled — see [Database setup](/guides/database-setup) for details.
+</ParamField>
+
+<ParamField query="PORT" type="number">
+  The port the HTTP server listens on. Defaults to `3000` when not set.
+</ParamField>
+
+### Summary table
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `DATABASE_URL` | Yes | — | PostgreSQL connection string |
+| `PORT` | No | `3000` | HTTP server port |
+
+## Example `.env` file
+
+Create a `.env` file in the project root:
+
+```bash
+DATABASE_URL=postgresql://user:password@host:5432/dbname
+PORT=3000
+```
+
+<Warning>
+Never commit your `.env` file to version control. Add it to `.gitignore` to prevent accidental exposure of credentials.
+
+```
+# .gitignore
+.env
+```
+</Warning>
+
+## How dotenv loads configuration
+
+In `index.js`, `config()` is called at the top of the file before any other initialization:
+
+```js
+import { config } from 'dotenv'
+
+config()
+```
+
+This reads `.env` from the working directory and populates `process.env`. If a variable is already set in the shell environment (e.g. on a hosting platform), dotenv will not override it — platform-level env vars always take precedence.
+
+## Port configuration
+
+The server port is resolved with a fallback:
+
+```js
+const port = process.env.PORT || 3000;
+```
+
+Set `PORT` in your environment or `.env` file to override the default. Most hosting platforms (Railway, Render, Heroku) inject `PORT` automatically.
+
+## CORS configuration
+
+Cross-origin requests are restricted to a single hardcoded origin:
+
+```js
+const allowedOrigin = 'https://eventosutmach.000webhostapp.com';
+app.use(cors({ origin: allowedOrigin }));
+```
+
+The `cors` middleware will reject requests from any other origin with a CORS error. If your frontend is hosted at a different domain, you must update the `allowedOrigin` constant in `index.js` and redeploy.
+
+<Warning>
+The allowed origin is baked into source code, not an environment variable. Changing the frontend domain requires a code change and a new deployment.
+</Warning>
+
+## Database connection options
+
+The `pg.Pool` is created with two settings:
+
+```js
+const pool = new pg.Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: true
+})
+```
+
+| Option | Value | Notes |
+|---|---|---|
+| `connectionString` | `process.env.DATABASE_URL` | Read from environment |
+| `ssl` | `true` | Hardcoded — cannot be disabled via env var |
+
+Because `ssl: true` is hardcoded, your PostgreSQL host must accept SSL connections. Local PostgreSQL instances typically do not have SSL enabled by default — use a cloud provider or configure SSL manually for local development.

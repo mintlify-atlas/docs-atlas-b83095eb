@@ -1,0 +1,76 @@
+---
+title: "GET /lista"
+description: "Retrieve all event participants from the database"
+---
+
+Returns all rows from the `Prueba` table as a JSON array. Each element in the array represents one participant record.
+
+**Method:** `GET`  
+**Path:** `/lista`
+
+## Parameters
+
+This endpoint accepts no path parameters, query parameters, or request body.
+
+## Request example
+
+```bash
+curl --request GET \
+  --url http://localhost:3000/lista
+```
+
+## Response fields
+
+<Note>
+  The exact fields returned in each object depend on the schema of the `Prueba` table in the connected PostgreSQL database. The fields below are illustrative examples.
+</Note>
+
+On success, the response is a JSON array. Each object in the array corresponds to a row in the `Prueba` table.
+
+<ResponseField name="[]" type="object[]">
+  Array of participant objects. One element per row in the `Prueba` table.
+
+  <Expandable title="properties">
+    <ResponseField name="id" type="number">
+      Row identifier, as defined in the `Prueba` table schema.
+    </ResponseField>
+    <ResponseField name="nombre" type="string">
+      Participant name, as defined in the `Prueba` table schema.
+    </ResponseField>
+    <ResponseField name="correo" type="string">
+      Participant email address, as defined in the `Prueba` table schema.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Response examples
+
+<Tabs>
+  <Tab title="200 Success">
+    The query executed successfully. Returns a JSON array with all rows from the `Prueba` table. An empty array is returned if the table contains no rows.
+
+    ```json
+    [
+      {
+        "id": 1,
+        "nombre": "Ana García",
+        "correo": "ana@example.com"
+      },
+      {
+        "id": 2,
+        "nombre": "Luis Pérez",
+        "correo": "luis@example.com"
+      }
+    ]
+    ```
+  </Tab>
+  <Tab title="500 Error">
+    The server encountered an unexpected error, such as a database connection failure. Returns a JSON object with a single `error` field.
+
+    ```json
+    {
+      "error": "Error en el servidor"
+    }
+    ```
+  </Tab>
+</Tabs>
